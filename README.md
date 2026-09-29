@@ -73,7 +73,7 @@ Copy `.env.example` to `.env` for local development:
 
 | Variable | Required | Description |
 |---|---|---|
-| `MAKEUPAR_API_KEY` | yes | Bearer token for the upstream try-on API |
+| `PERFECT_CORP_API_KEY` | yes | Bearer token for the upstream try-on API |
 | `MAKEUPAR_BASE_URL` | no | Override upstream base URL |
 | `ALLOWED_ORIGIN` | no | CORS origin allowed to call this API (default `*`) |
 
@@ -94,7 +94,7 @@ Then set the environment variables in the Vercel dashboard (Project →
 Settings → Environment Variables), or via CLI:
 
 ```bash
-vercel env add MAKEUPAR_API_KEY
+vercel env add PERFECT_CORP_API_KEY
 ```
 
 Redeploy after adding env vars:
@@ -105,7 +105,7 @@ vercel --prod
 
 ## Security
 
-- Never commit `.env` or hardcode `MAKEUPAR_API_KEY` — it is read only from
+- Never commit `.env` or hardcode `PERFECT_CORP_API_KEY` — it is read only from
   environment variables at request time.
 - If this key has ever been shared in plaintext (chat, screenshots, scripts),
   rotate it with the upstream provider before going to production.
