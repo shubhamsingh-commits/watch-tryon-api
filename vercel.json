@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/tryon/index.js": { "maxDuration": 60 },
+    "api/tryon/start.js": { "maxDuration": 15 },
+    "api/tryon/[taskId].js": { "maxDuration": 15 }
+  }
+}

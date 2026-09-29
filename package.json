@@ -1,0 +1,10 @@
+{
+  "name": "watch-tryon-api",
+  "version": "1.0.0",
+  "description": "Serverless API for virtual watch try-on, deployable on Vercel.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
