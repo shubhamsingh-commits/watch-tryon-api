@@ -1,7 +1,7 @@
-import { put } from '@vercel/blob';
+import { uploadImage } from '../lib/makeupar.js';
 import { withCors, sendError } from '../lib/http.js';
 
-const MAX_BYTES = 4 * 1024 * 1024; // keep uploads well under Vercel's request body limit
+const MAX_BYTES = 10 * 1024 * 1024; // matches Perfect Corp's documented 10MB image limit
 
 function badRequest(message) {
   const error = new Error(message);
@@ -10,9 +10,11 @@ function badRequest(message) {
 }
 
 /**
- * Uploads a user-provided photo to public storage so it can be passed as
- * srcFileUrl / refFileUrls to the upstream try-on API, which requires a
- * publicly reachable URL (it cannot fetch blob:/data: URLs from the browser).
+ * Uploads a user-provided photo (e.g. from a file picker or camera capture)
+ * to Perfect Corp's File API and returns a fileId. Use this for any image
+ * that doesn't already have a public URL — most commonly the user's own
+ * wrist photo, since product/watch images are usually already hosted on
+ * your site and can be passed directly as refFileUrls.
  */
 export default async function handler(req, res) {
   if (withCors(req, res)) return;
@@ -28,20 +30,14 @@ export default async function handler(req, res) {
     if (!contentType.startsWith('image/')) throw badRequest('contentType must be an image type');
 
     const buffer = Buffer.from(base64, 'base64');
+    if (buffer.length === 0) throw badRequest('Image contains no bytes');
     if (buffer.length > MAX_BYTES) {
       throw badRequest(`Image too large (max ${MAX_BYTES / (1024 * 1024)}MB)`);
     }
 
-    const safeName = (fileName || 'photo').replace(/[^a-zA-Z0-9_.-]/g, '_');
-    const key = `tryon-uploads/${Date.now()}-${safeName}`;
-
-    const blob = await put(key, buffer, {
-      access: 'public',
-      contentType,
-    });
-
-    res.status(200).json({ success: true, url: blob.url });
+    const fileId = await uploadImage(buffer, contentType, fileName || 'photo.jpg');
+    res.status(200).json({ success: true, fileId });
   } catch (err) {
-    sendError(res, err.status || 500, err.message);
+    sendError(res, err.status || 500, err.message, err.payload);
   }
 }

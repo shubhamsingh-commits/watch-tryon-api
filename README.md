@@ -14,20 +14,22 @@ Vercel.
 >
 > Use one or the other per field (don't mix `srcFileId` and `srcFileUrl`).
 >
-> **Important:** the upstream API fetches these URLs itself from its own
-> servers, so they must be **publicly reachable over the internet**. A
-> `blob:` URL, `data:` URL, or a local file path from the browser will be
-> rejected (`InvalidParameters` / task `error`). If your frontend lets users
-> upload a photo from their device, upload it through `POST /api/upload`
-> first to get a public URL, then use that URL as `srcFileUrl`.
+> **Important:** the upstream API fetches URL-based images itself from its
+> own servers, so `srcFileUrl` / `refFileUrls` must be **publicly reachable
+> over the internet**. A `blob:` URL, `data:` URL, or a local file path from
+> the browser will be rejected (`InvalidParameters` / task `error`). If your
+> frontend lets users upload a photo from their device, send it through
+> `POST /api/upload` first to get a `fileId`, then use that as `srcFileId`.
 
 ## Endpoints
 
 ### `POST /api/upload`
 Uploads a user-provided photo (e.g. from a file picker or camera capture) to
-public storage (Vercel Blob) and returns a public URL. Use this for any image
+Perfect Corp's own File API and returns a `fileId`. Use this for any image
 that doesn't already have a public URL — most commonly the user's own wrist
-photo, since product/watch images are usually already hosted on your site.
+photo, since product/watch images are usually already hosted on your site
+and can be passed directly as `refFileUrls`. No storage/database of our own
+is needed — the bytes are relayed straight through to Perfect Corp.
 
 **Body**
 ```json
@@ -43,14 +45,10 @@ prefix) before sending.
 
 **Response**
 ```json
-{ "success": true, "url": "https://<...>.public.blob.vercel-storage.com/tryon-uploads/..." }
+{ "success": true, "fileId": "2sux1R+9MOJ6/ghfPJFvwGio7cTkSI2BA9guypq3jRELbKfeLEmuXUa9yH4wuc2K" }
 ```
-Use this `url` as `srcFileUrl` (or an entry in `refFileUrls`) in the calls
-below. Max upload size is 4MB — resize/compress on the client if needed.
-
-> Requires a Vercel Blob store connected to this project (Vercel dashboard →
-> Storage → Create Database → Blob). This auto-provisions the
-> `BLOB_READ_WRITE_TOKEN` environment variable the upload code needs.
+Use this `fileId` as `srcFileId` (or an entry in `refFileIds`) in the calls
+below. Max upload size is 10MB.
 
 ### `POST /api/tryon/start`
 Starts an async try-on task and returns immediately with a `taskId`.
@@ -122,7 +120,8 @@ Copy `.env.example` to `.env` for local development:
 | Variable | Required | Description |
 |---|---|---|
 | `PERFECT_CORP_API_KEY` | yes | Bearer token for the upstream try-on API |
-| `MAKEUPAR_BASE_URL` | no | Override upstream base URL |
+| `MAKEUPAR_ROOT_URL` | no | Override upstream root domain (default `https://yce-api-01.makeupar.com`) |
+| `MAKEUPAR_BASE_URL` | no | Override the full task endpoint URL |
 | `ALLOWED_ORIGIN` | no | CORS origin allowed to call this API (default `*`) |
 
 ## Local development
