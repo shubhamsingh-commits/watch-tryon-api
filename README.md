@@ -4,28 +4,40 @@ Serverless API for virtual watch try-on. Wraps the upstream 2D VTO "watch"
 engine (async task-based) behind a simple REST interface, ready to deploy on
 Vercel.
 
-> **Note on file IDs:** `srcFileId` (the person's wrist/arm photo) and
-> `refFileIds` (the watch product photo) must already be uploaded to the
-> upstream file storage service and referenced by their file ID — the same
-> way `src_file_id` / `ref_file_ids` are used in the upstream task API. This
-> service does not perform the upload step itself.
+> **Two ways to supply images:**
+> 1. **Direct URLs** (simplest — no upload step): pass `srcFileUrl` (the
+>    person's wrist/arm photo) and `refFileUrls` (the watch product photo)
+>    as publicly reachable image URLs.
+> 2. **Pre-uploaded file IDs**: pass `srcFileId` / `refFileIds` if you've
+>    already uploaded images to the upstream file storage service and have
+>    their file IDs.
+>
+> Use one or the other per field (don't mix `srcFileId` and `srcFileUrl`).
 
 ## Endpoints
 
 ### `POST /api/tryon/start`
 Starts an async try-on task and returns immediately with a `taskId`.
 
-**Body**
+**Body (URL-based — recommended)**
 ```json
 {
-  "srcFileId": "2sux1R+9MOJ6/ghfPJFvwGio7cTkSI2BA9guypq3jRELbKfeLEmuXUa9yH4wuc2K",
-  "refFileIds": ["8IDHJBSumvsP2nv7fJ4aCEYk2DX2kspliZtHkP71Y3ILbKfeLEmuXUa9yH4wuc2K"],
+  "srcFileUrl": "https://example.com/wrist-photo.png",
+  "refFileUrls": ["https://example.com/watch-product.png"],
   "watchOptions": {
     "removeBackground": false,
     "wearingLocation": 0,
     "shadowIntensity": 0.15,
     "ambientLightIntensity": 1
   }
+}
+```
+
+**Body (file-ID based)**
+```json
+{
+  "srcFileId": "2sux1R+9MOJ6/ghfPJFvwGio7cTkSI2BA9guypq3jRELbKfeLEmuXUa9yH4wuc2K",
+  "refFileIds": ["8IDHJBSumvsP2nv7fJ4aCEYk2DX2kspliZtHkP71Y3ILbKfeLEmuXUa9yH4wuc2K"]
 }
 ```
 `watchOptions` is optional; values above are the defaults.
